@@ -1,0 +1,19 @@
+{
+    "websocket": {
+        "host": "0.0.0.0",
+        "port": 8765
+    },
+    "heartbeat": {
+        "interval_seconds": 15,
+        "timeout_seconds": 30
+    },
+    "auth": {
+        "registration_timeout_seconds": 10
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "logs/bot.log",
+        "rotation": "10 MB",
+        "retention": "7 days"
+    }
+}
