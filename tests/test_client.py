@@ -153,12 +153,10 @@ async def test_agent_reconnects_on_server_close(bot_config):
 async def test_backoff_doubles():
     """Backoff delay doubles after each failed connection attempt."""
     delays_recorded = []
-    original_sleep = asyncio.sleep
 
     async def mock_sleep(duration):
         delays_recorded.append(duration)
-        # Don't actually sleep long
-        await original_sleep(0.01)
+        await asyncio.sleep(0.01)
 
     config = AgentConfig(
         shared_secret="test",
@@ -166,19 +164,15 @@ async def test_backoff_doubles():
         machine_name="test-backoff",
     )
     agent = AgentClient(config, base_delay=1.0, max_delay=60.0, jitter_max=0.0)
-
-    # Monkey-patch asyncio.sleep to capture delays
-    import agent.client as client_module
-    original = asyncio.sleep
-    client_module.asyncio.sleep = mock_sleep
+    agent._sleep = mock_sleep
 
     task = asyncio.create_task(agent.run())
     try:
-        # Wait for several retry attempts
-        for _ in range(100):
+        # Connection attempts to port 1 may take ~1s each on Windows
+        for _ in range(300):
             if len(delays_recorded) >= 4:
                 break
-            await original_sleep(0.02)
+            await asyncio.sleep(0.1)
 
         assert len(delays_recorded) >= 4
         # Delays should approximately double: 1, 2, 4, 8
@@ -193,18 +187,16 @@ async def test_backoff_doubles():
             await task
         except asyncio.CancelledError:
             pass
-        client_module.asyncio.sleep = original
 
 
 @pytest.mark.asyncio
 async def test_backoff_caps_at_max():
     """Backoff delay never exceeds max_delay."""
     delays_recorded = []
-    original_sleep = asyncio.sleep
 
     async def mock_sleep(duration):
         delays_recorded.append(duration)
-        await original_sleep(0.01)
+        await asyncio.sleep(0.01)
 
     config = AgentConfig(
         shared_secret="test",
@@ -213,16 +205,14 @@ async def test_backoff_caps_at_max():
     )
     # Start with high base so we hit cap quickly
     agent = AgentClient(config, base_delay=16.0, max_delay=60.0, jitter_max=0.0)
-
-    import agent.client as client_module
-    client_module.asyncio.sleep = mock_sleep
+    agent._sleep = mock_sleep
 
     task = asyncio.create_task(agent.run())
     try:
-        for _ in range(100):
+        for _ in range(300):
             if len(delays_recorded) >= 4:
                 break
-            await original_sleep(0.02)
+            await asyncio.sleep(0.1)
 
         assert len(delays_recorded) >= 4
         for d in delays_recorded:
@@ -234,33 +224,29 @@ async def test_backoff_caps_at_max():
             await task
         except asyncio.CancelledError:
             pass
-        client_module.asyncio.sleep = original
 
 
 @pytest.mark.asyncio
 async def test_backoff_resets_on_success(bot_config):
     """Backoff resets to base_delay after a successful connection."""
     delays_recorded = []
-    original_sleep = asyncio.sleep
 
     async def mock_sleep(duration):
         delays_recorded.append(duration)
-        await original_sleep(0.01)
-
-    import agent.client as client_module
-    client_module.asyncio.sleep = mock_sleep
+        await asyncio.sleep(0.01)
 
     # Start with no server (will fail and backoff)
     agent = _make_agent(bot_config.ws_port, secret=bot_config.shared_secret,
                         base_delay=0.1, max_delay=5.0, jitter_max=0.0)
+    agent._sleep = mock_sleep
     task = asyncio.create_task(agent.run())
 
     try:
-        # Let it fail a couple times
-        for _ in range(50):
+        # Let it fail a couple times (connection failures can take ~1s on Windows)
+        for _ in range(150):
             if len(delays_recorded) >= 2:
                 break
-            await original_sleep(0.02)
+            await asyncio.sleep(0.1)
 
         assert len(delays_recorded) >= 2
         # Delays should have grown
@@ -271,10 +257,10 @@ async def test_backoff_resets_on_success(bot_config):
         server = await serve(manager.handler, bot_config.ws_host, bot_config.ws_port)
 
         # Wait for registration
-        for _ in range(100):
+        for _ in range(200):
             if "test-agent" in manager.agents:
                 break
-            await original_sleep(0.05)
+            await asyncio.sleep(0.1)
         assert "test-agent" in manager.agents
 
         # Record delay count before disconnect
@@ -285,10 +271,10 @@ async def test_backoff_resets_on_success(bot_config):
         await ws.close()
 
         # Wait for a new delay to be recorded
-        for _ in range(100):
+        for _ in range(150):
             if len(delays_recorded) > count_before:
                 break
-            await original_sleep(0.02)
+            await asyncio.sleep(0.1)
 
         # The new delay should be back to base (~0.1)
         if len(delays_recorded) > count_before:
@@ -303,7 +289,6 @@ async def test_backoff_resets_on_success(bot_config):
             await task
         except asyncio.CancelledError:
             pass
-        client_module.asyncio.sleep = original
 
 
 @pytest.mark.asyncio
