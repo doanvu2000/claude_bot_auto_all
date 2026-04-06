@@ -12,7 +12,8 @@ From any Discord client, control any registered machine's terminal and Claude Co
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Bot and agents reconnect automatically after disconnect — Validated in Phase 1: websocket-transport-agent-foundation
+- [x] Agents register themselves (with machine name) when they come online — Validated in Phase 1: websocket-transport-agent-foundation
 
 ### Active
 
