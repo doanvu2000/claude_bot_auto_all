@@ -30,12 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. When agent's network drops, it automatically reconnects with exponential backoff and re-registers without manual intervention
   4. Bot and agent exchange periodic heartbeat pings; bot detects a dead agent within 30 seconds of disconnection
   5. Bot and agent config files load from JSON/env with example templates available
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Project structure, shared protocol (Pydantic message models), config system, test infrastructure
+- [ ] 01-02-PLAN.md — Bot WebSocket server with auth, registration, heartbeat monitoring
+- [ ] 01-03-PLAN.md — Agent WebSocket client with reconnection, heartbeat response, integration tests
 
 ### Phase 2: Discord Bot & Message Routing
 **Goal**: Users in Discord can send messages that reach the correct machine agent, with access control enforced and agent status visible
