@@ -96,3 +96,14 @@ def ws_uri(ws_server):
     """WebSocket URI for test client connections."""
     _, port = ws_server
     return f"ws://127.0.0.1:{port}"
+
+
+@pytest.fixture
+def agent_config(free_port, test_secret):
+    """AgentConfig pointing to a test server with fast timeouts."""
+    from agent.config import AgentConfig
+    return AgentConfig(
+        shared_secret=test_secret,
+        bot_url=f"ws://127.0.0.1:{free_port}",
+        machine_name="test-agent",
+    )
