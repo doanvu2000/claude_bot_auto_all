@@ -33,9 +33,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [x] 01-01: TBD
+- [x] 01-02: TBD
+- [x] 01-03: TBD
 
 ### Phase 2: Discord Bot & Message Routing
 **Goal**: Users in Discord can send messages that reach the correct machine agent, with access control enforced and agent status visible
