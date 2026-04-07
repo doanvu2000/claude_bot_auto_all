@@ -9,18 +9,21 @@ class TestBotConfig:
     def test_bot_config_loads_shared_secret(self, tmp_path, monkeypatch):
         from bot.config import load_bot_config
         monkeypatch.setenv("SHARED_SECRET", "test-secret-bot")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
         config = load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
         assert config.shared_secret == "test-secret-bot"
 
     def test_bot_config_default_ws_port(self, tmp_path, monkeypatch):
         from bot.config import load_bot_config
         monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
         config = load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
         assert config.ws_port == 8765
 
     def test_bot_config_loads_from_config_json(self, tmp_config_file, monkeypatch):
         from bot.config import load_bot_config
         monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
         config = load_bot_config(config_path=tmp_config_file)
         assert config.ws_port == 9999
         assert config.ws_host == "127.0.0.1"
@@ -31,8 +34,35 @@ class TestBotConfig:
     def test_bot_config_raises_without_shared_secret(self, tmp_path, monkeypatch):
         from bot.config import load_bot_config
         monkeypatch.delenv("SHARED_SECRET", raising=False)
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
         with pytest.raises(ValueError, match="SHARED_SECRET"):
             load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
+
+    def test_bot_config_raises_without_discord_token(self, tmp_path, monkeypatch):
+        from bot.config import load_bot_config
+        monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.delenv("DISCORD_BOT_TOKEN", raising=False)
+        with pytest.raises(ValueError, match="DISCORD_BOT_TOKEN"):
+            load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
+
+    def test_bot_config_loads_discord_settings(self, tmp_path, monkeypatch):
+        import json
+        from bot.config import load_bot_config
+        monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {
+                "allowed_guild_ids": [111, 222],
+                "allowed_user_ids": [333],
+                "channel_mapping": {"456": "my-pc"}
+            }
+        }))
+        config = load_bot_config(config_path=str(config_file))
+        assert config.discord_token == "test-token"
+        assert config.allowed_guild_ids == [111, 222]
+        assert config.allowed_user_ids == [333]
+        assert config.channel_mapping == {"456": "my-pc"}
 
 
 class TestAgentConfig:

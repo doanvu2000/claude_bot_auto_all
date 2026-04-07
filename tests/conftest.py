@@ -68,6 +68,7 @@ def bot_config(free_port, test_secret):
         heartbeat_interval=1,
         heartbeat_timeout=3,
         registration_timeout=2,
+        discord_token="test-discord-token",
     )
 
 
