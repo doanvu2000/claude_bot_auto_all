@@ -24,8 +24,8 @@ A Discord bot that acts as a remote control interface for multiple computers. Ea
 ### Core Framework
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| discord.py | 2.3.x | Discord bot | Actively maintained async-first Python library. The 2.x rewrite (Rapptz, 2021) resolved the abandonment scare; v2.3 is the stable current series. Native `asyncio`, slash commands, message intents. |
-| websockets | 12.x | Agent ↔ Bot transport | Pure-Python async WebSocket server/client. No Node.js dependency, minimal weight, correct semantics for NAT-traversal (agents connect OUT to bot's server). |
+| discord.py | 2.7.x | Discord bot | Actively maintained async-first Python library. The 2.x rewrite (Rapptz, 2021) resolved the abandonment scare; v2.7 is the stable current series. Native `asyncio`, slash commands, message intents. |
+| websockets | 16.x | Agent ↔ Bot transport | Pure-Python async WebSocket server/client. No Node.js dependency, minimal weight, correct semantics for NAT-traversal (agents connect OUT to bot's server). |
 | asyncio | stdlib | Async event loop | Ships with Python 3.11+. Drives both the discord.py client and the WebSocket server on the same event loop — no threading needed. |
 ### Python Runtime
 | Technology | Version | Purpose | Why |
@@ -34,8 +34,8 @@ A Discord bot that acts as a remote control interface for multiple computers. Ea
 ### Agent ↔ Bot Communication
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| websockets (server) | 12.x | Bot hosts WS server | The bot machine runs `websockets.serve()`. Agents connect OUT through NAT. Single persistent connection per agent. |
-| websockets (client) | 12.x | Agent connects to bot | Each agent runs `websockets.connect()` with exponential backoff reconnect loop. |
+| websockets (server) | 16.x | Bot hosts WS server | The bot machine runs `from websockets.asyncio.server import serve`. Agents connect OUT through NAT. Single persistent connection per agent. |
+| websockets (client) | 16.x | Agent connects to bot | Each agent runs `from websockets.asyncio.client import connect` with exponential backoff reconnect loop. |
 | JSON message protocol | N/A | Wire format | Plain JSON envelopes: `{"type": "command", "id": "...", "payload": "..."}`. No binary framing needed at this scale. |
 ### Process Management (Shell Command Execution)
 | Technology | Version | Purpose | Why |
