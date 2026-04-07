@@ -441,22 +441,22 @@ async def global_check(interaction: discord.Interaction) -> bool:
 | A2 | `default_permissions(administrator=True)` effectively hides commands from non-admin users | Pitfall 6 | Commands visible to everyone; only enforcement is the check decorator |
 | A3 | `tree.copy_global_to()` + `sync(guild=)` works for multi-guild scenarios | Architecture Patterns | May need per-guild command registration instead |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **D-15 Implementation Feasibility**
+1. **D-15 Implementation Feasibility** -- RESOLVED
    - What we know: Discord's native command hiding works at role level, not user ID level. `default_permissions` can hide from non-admins.
    - What's unclear: Whether the user expects true invisibility or just rejection-on-invoke is sufficient.
-   - Recommendation: Implement `default_permissions(administrator=True)` + `app_commands.check` for user ID enforcement. Document that command visibility depends on Discord server role configuration.
+   - **Resolution:** Implement `default_permissions(administrator=True)` + `app_commands.check` for user ID enforcement. This provides best-effort hiding (commands invisible to non-admins) with guaranteed enforcement (user ID check rejects unauthorized invocations). Command visibility depends on Discord server role configuration -- documented as a known limitation.
 
-2. **Auto-Channel Guild Selection (D-14)**
+2. **Auto-Channel Guild Selection (D-14)** -- RESOLVED
    - What we know: When an agent connects with no channel mapped, bot creates a channel.
    - What's unclear: If there are multiple allowed guilds, which guild gets the auto-created channel?
-   - Recommendation: Create in the first allowed guild, or require a `default_guild_id` in config.
+   - **Resolution:** Create in the first guild in `allowed_guild_ids` list. This is the simplest approach and sufficient for the personal-use scale of this bot. If multi-guild support becomes important later, a `default_guild_id` config key can be added.
 
-3. **Config.json Write Safety**
+3. **Config.json Write Safety** -- RESOLVED
    - What we know: `/reload` reads config.json. Auto-channel creation writes to config.json.
    - What's unclear: Race condition if both happen simultaneously.
-   - Recommendation: Use `asyncio.Lock` for config.json read/write operations.
+   - **Resolution:** Use `asyncio.Lock` (`self._config_lock`) in BotConfig for all config.json read/write operations. Both `save_config()` and `reload_config()` acquire the lock. Since everything runs on a single asyncio event loop, this prevents interleaved reads/writes.
 
 ## Environment Availability
 

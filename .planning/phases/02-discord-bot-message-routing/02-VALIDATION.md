@@ -38,13 +38,13 @@ created: 2026-04-07
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | ROUT-01 | — | Channel-to-agent routing delivers to correct agent | unit | `python -m pytest tests/test_discord_bot.py -k test_channel_routing -x` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 1 | AUTH-01 | T-02-01 | Unauthorized users rejected | unit | `python -m pytest tests/test_discord_bot.py -k test_access_control -x` | ❌ W0 | ⬜ pending |
-| 02-01-03 | 01 | 1 | AUTH-04 | T-02-02 | Unauthorized guilds rejected | unit | `python -m pytest tests/test_discord_bot.py -k test_guild_allowlist -x` | ❌ W0 | ⬜ pending |
-| 02-02-01 | 02 | 1 | ROUT-03 | — | Unmapped channels silently ignored | unit | `python -m pytest tests/test_discord_bot.py -k test_unmapped_channel -x` | ❌ W0 | ⬜ pending |
-| 02-02-02 | 02 | 1 | AGNT-03 | — | Agent connect/disconnect notification in channel | integration | `python -m pytest tests/test_discord_bot.py -k test_agent_notification -x` | ❌ W0 | ⬜ pending |
-| 02-03-01 | 03 | 2 | ROUT-04, ROUT-05 | — | /status and /help slash commands work | integration | `python -m pytest tests/test_discord_bot.py -k test_slash_commands -x` | ❌ W0 | ⬜ pending |
-| 02-03-02 | 03 | 2 | AGNT-06 | — | /reload hot-reloads config | integration | `python -m pytest tests/test_discord_bot.py -k test_reload -x` | ❌ W0 | ⬜ pending |
+| 02-01-01 | 01 | 1 | ROUT-01 | — | Channel-to-agent routing delivers to correct agent | unit | `python -m pytest tests/test_routing.py -k test_mapped_channel -x` | ❌ W0 | ⬜ pending |
+| 02-01-02 | 01 | 1 | AUTH-01 | T-02-01 | Unauthorized users rejected | unit | `python -m pytest tests/test_auth.py -k test_unauthorized_user -x` | ❌ W0 | ⬜ pending |
+| 02-01-03 | 01 | 1 | AUTH-04 | T-02-02 | Unauthorized guilds rejected | unit | `python -m pytest tests/test_auth.py -k test_unauthorized_guild -x` | ❌ W0 | ⬜ pending |
+| 02-02-01 | 02 | 1 | ROUT-03 | — | Unmapped channels silently ignored | unit | `python -m pytest tests/test_routing.py -k test_unmapped_channel -x` | ❌ W0 | ⬜ pending |
+| 02-02-02 | 02 | 1 | AGNT-03 | — | Agent connect/disconnect notification in channel | integration | `python -m pytest tests/test_notifications.py -k test_agent -x` | ❌ W0 | ⬜ pending |
+| 02-03-01 | 03 | 2 | ROUT-04, ROUT-05 | — | /status and /help slash commands work | integration | `python -m pytest tests/test_commands.py -k "test_status or test_help" -x` | ❌ W0 | ⬜ pending |
+| 02-03-02 | 03 | 2 | AGNT-06 | — | /reload hot-reloads config | integration | `python -m pytest tests/test_config.py -k test_reload -x` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,7 +52,11 @@ created: 2026-04-07
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_discord_bot.py` — stubs for ROUT-01, ROUT-02, ROUT-03, ROUT-04, ROUT-05, AUTH-01, AUTH-04, AGNT-03, AGNT-06
+- [ ] `tests/test_routing.py` — covers ROUT-01, ROUT-03
+- [ ] `tests/test_commands.py` — covers ROUT-04, AGNT-06
+- [ ] `tests/test_auth.py` — covers AUTH-01, AUTH-04
+- [ ] `tests/test_notifications.py` — covers AGNT-03
+- [ ] `tests/test_config.py` — extend for Discord config fields (ROUT-02)
 - [ ] `tests/conftest.py` — shared fixtures (mock Discord client, mock AgentManager)
 - [ ] `pip install pytest pytest-asyncio dpytest` — test framework + discord.py test utilities
 
