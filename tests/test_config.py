@@ -1,4 +1,6 @@
 """Tests for bot and agent config loading."""
+import asyncio
+import json
 import os
 import pytest
 
@@ -107,3 +109,128 @@ class TestAgentConfig:
         monkeypatch.delenv("SHARED_SECRET", raising=False)
         with pytest.raises(ValueError, match="SHARED_SECRET"):
             load_agent_config(config_path=str(tmp_path / "nonexistent.json"))
+
+
+class TestDiscordConfig:
+    """Additional tests for Discord config extension (ROUT-02) and field loading."""
+
+    def test_config_loads_discord_token(self, tmp_path, monkeypatch):
+        """Discord token loaded from DISCORD_BOT_TOKEN env var."""
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [], "allowed_user_ids": [], "channel_mapping": {}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token-123")
+        from bot.config import load_bot_config
+        config = load_bot_config(str(config_file))
+        assert config.discord_token == "test-token-123"
+
+    def test_config_loads_allowed_guild_ids(self, tmp_path, monkeypatch):
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [123, 456], "allowed_user_ids": [], "channel_mapping": {}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
+        from bot.config import load_bot_config
+        config = load_bot_config(str(config_file))
+        assert config.allowed_guild_ids == [123, 456]
+
+    def test_config_loads_channel_mapping(self, tmp_path, monkeypatch):
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [], "allowed_user_ids": [], "channel_mapping": {"111": "desktop"}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
+        from bot.config import load_bot_config
+        config = load_bot_config(str(config_file))
+        assert config.channel_mapping == {"111": "desktop"}
+
+    def test_config_missing_discord_token_raises(self, tmp_path, monkeypatch):
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [], "allowed_user_ids": [], "channel_mapping": {}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "test-secret")
+        monkeypatch.delenv("DISCORD_BOT_TOKEN", raising=False)
+        from bot.config import load_bot_config
+        with pytest.raises(ValueError, match="DISCORD_BOT_TOKEN"):
+            load_bot_config(str(config_file))
+
+
+class TestConfigReload:
+    """Addresses review concern #8: reload safety tests."""
+
+    @pytest.mark.asyncio
+    async def test_reload_config_updates_mapping(self, tmp_path, monkeypatch):
+        """reload_config updates channel_mapping from disk."""
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [1], "allowed_user_ids": [2], "channel_mapping": {"111": "a"}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "s")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "t")
+        from bot.config import load_bot_config
+        config = load_bot_config(str(config_file))
+        assert config.channel_mapping == {"111": "a"}
+        # Modify file and reload
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [1, 3], "allowed_user_ids": [2], "channel_mapping": {"111": "a", "222": "b"}}
+        }))
+        await config.reload_config()
+        assert config.channel_mapping == {"111": "a", "222": "b"}
+        assert 3 in config.allowed_guild_ids
+
+    @pytest.mark.asyncio
+    async def test_reload_invalid_json_raises(self, tmp_path, monkeypatch):
+        """Reload with invalid JSON raises error, config unchanged (review concern #8)."""
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [1], "allowed_user_ids": [2], "channel_mapping": {"111": "a"}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "s")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "t")
+        from bot.config import load_bot_config
+        config = load_bot_config(str(config_file))
+        original_mapping = dict(config.channel_mapping)
+        # Corrupt the file
+        config_file.write_text("NOT VALID JSON {{{")
+        with pytest.raises(Exception):  # json.JSONDecodeError or ValueError
+            await config.reload_config()
+        # Original config should be unchanged after failed reload
+        assert config.channel_mapping == original_mapping
+
+    @pytest.mark.asyncio
+    async def test_reload_uses_lock(self, tmp_path, monkeypatch):
+        """reload_config acquires _config_lock (review concern #5)."""
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [], "allowed_user_ids": [], "channel_mapping": {}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "s")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "t")
+        from bot.config import load_bot_config
+        config = load_bot_config(str(config_file))
+        assert hasattr(config, '_config_lock')
+        # Verify lock exists and is an asyncio.Lock
+        assert isinstance(config._config_lock, asyncio.Lock)
+
+    @pytest.mark.asyncio
+    async def test_save_config_persists_mapping(self, tmp_path, monkeypatch):
+        """save_config writes channel_mapping to disk."""
+        config_file = tmp_path / "config.json"
+        config_file.write_text(json.dumps({
+            "discord": {"allowed_guild_ids": [], "allowed_user_ids": [], "channel_mapping": {}}
+        }))
+        monkeypatch.setenv("SHARED_SECRET", "s")
+        monkeypatch.setenv("DISCORD_BOT_TOKEN", "t")
+        from bot.config import load_bot_config
+        config = load_bot_config(str(config_file))
+        config.channel_mapping["999"] = "new-machine"
+        await config.save_config()
+        # Re-read from disk
+        with open(config_file) as f:
+            data = json.load(f)
+        assert data["discord"]["channel_mapping"]["999"] == "new-machine"

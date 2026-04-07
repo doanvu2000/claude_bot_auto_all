@@ -30,12 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. When agent's network drops, it automatically reconnects with exponential backoff and re-registers without manual intervention
   4. Bot and agent exchange periodic heartbeat pings; bot detects a dead agent within 30 seconds of disconnection
   5. Bot and agent config files load from JSON/env with example templates available
-**Plans**: 3 plans
+**Plans**: TBD
 
 Plans:
-- [x] 01-01-PLAN.md — WebSocket server and agent authentication
-- [x] 01-02-PLAN.md — Agent client with reconnection logic
-- [x] 01-03-PLAN.md — Heartbeat monitoring and graceful shutdown
+- [x] 01-01: TBD
+- [x] 01-02: TBD
+- [x] 01-03: TBD
 
 ### Phase 2: Discord Bot & Message Routing
 **Goal**: Users in Discord can send messages that reach the correct machine agent, with access control enforced and agent status visible
@@ -47,12 +47,12 @@ Plans:
   3. Messages in unmapped channels are silently ignored
   4. When an agent connects or disconnects, a notification appears in its mapped Discord channel
   5. User can run `/status` to see all connected agents and `/help` to see available commands
-**Plans**: 3 plans
+**Plans**: TBD
 
 Plans:
-- [ ] 02-01-PLAN.md — Bot infrastructure: config extension, TerminalBot class, dual WS+Discord startup, AgentManager callbacks
-- [ ] 02-02-PLAN.md — Slash commands (/status, /help, /ping, /reload), access control, agent notifications, auto-channel creation
-- [ ] 02-03-PLAN.md — Unit tests for routing, config, auth, commands, and notifications
+- [ ] 02-01: TBD
+- [ ] 02-02: TBD
+- [ ] 02-03: TBD
 
 ### Phase 3: Shell Command Execution
 **Goal**: Users can execute shell commands on any connected machine via Discord and receive formatted output
