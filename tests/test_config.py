@@ -34,18 +34,22 @@ class TestBotConfig:
         assert config.registration_timeout == 5
 
     def test_bot_config_raises_without_shared_secret(self, tmp_path, monkeypatch):
+        from unittest.mock import patch
         from bot.config import load_bot_config
         monkeypatch.delenv("SHARED_SECRET", raising=False)
         monkeypatch.setenv("DISCORD_BOT_TOKEN", "test-token")
-        with pytest.raises(ValueError, match="SHARED_SECRET"):
-            load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
+        with patch("bot.config.load_dotenv"):  # prevent .env from restoring SHARED_SECRET
+            with pytest.raises(ValueError, match="SHARED_SECRET"):
+                load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
 
     def test_bot_config_raises_without_discord_token(self, tmp_path, monkeypatch):
+        from unittest.mock import patch
         from bot.config import load_bot_config
         monkeypatch.setenv("SHARED_SECRET", "test-secret")
         monkeypatch.delenv("DISCORD_BOT_TOKEN", raising=False)
-        with pytest.raises(ValueError, match="DISCORD_BOT_TOKEN"):
-            load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
+        with patch("bot.config.load_dotenv"):  # prevent .env from restoring DISCORD_BOT_TOKEN
+            with pytest.raises(ValueError, match="DISCORD_BOT_TOKEN"):
+                load_bot_config(config_path=str(tmp_path / "nonexistent.json"))
 
     def test_bot_config_loads_discord_settings(self, tmp_path, monkeypatch):
         import json
@@ -90,11 +94,13 @@ class TestAgentConfig:
         assert config.machine_name == "custom-machine"
 
     def test_agent_config_default_machine_name_is_hostname(self, tmp_path, monkeypatch):
+        from unittest.mock import patch
         from agent.config import load_agent_config
         import platform
         monkeypatch.setenv("SHARED_SECRET", "test-secret")
         monkeypatch.delenv("MACHINE_NAME", raising=False)
-        config = load_agent_config(config_path=str(tmp_path / "nonexistent.json"))
+        with patch("agent.config.load_dotenv"):  # prevent .env from restoring MACHINE_NAME
+            config = load_agent_config(config_path=str(tmp_path / "nonexistent.json"))
         assert config.machine_name == platform.node()
 
     def test_agent_config_loads_bot_url_from_env(self, tmp_path, monkeypatch):
@@ -105,10 +111,12 @@ class TestAgentConfig:
         assert config.bot_url == "ws://remote:1234"
 
     def test_agent_config_raises_without_shared_secret(self, tmp_path, monkeypatch):
+        from unittest.mock import patch
         from agent.config import load_agent_config
         monkeypatch.delenv("SHARED_SECRET", raising=False)
-        with pytest.raises(ValueError, match="SHARED_SECRET"):
-            load_agent_config(config_path=str(tmp_path / "nonexistent.json"))
+        with patch("agent.config.load_dotenv"):
+            with pytest.raises(ValueError, match="SHARED_SECRET"):
+                load_agent_config(config_path=str(tmp_path / "nonexistent.json"))
 
 
 class TestDiscordConfig:
@@ -149,6 +157,7 @@ class TestDiscordConfig:
         assert config.channel_mapping == {"111": "desktop"}
 
     def test_config_missing_discord_token_raises(self, tmp_path, monkeypatch):
+        from unittest.mock import patch
         config_file = tmp_path / "config.json"
         config_file.write_text(json.dumps({
             "discord": {"allowed_guild_ids": [], "allowed_user_ids": [], "channel_mapping": {}}
@@ -156,8 +165,9 @@ class TestDiscordConfig:
         monkeypatch.setenv("SHARED_SECRET", "test-secret")
         monkeypatch.delenv("DISCORD_BOT_TOKEN", raising=False)
         from bot.config import load_bot_config
-        with pytest.raises(ValueError, match="DISCORD_BOT_TOKEN"):
-            load_bot_config(str(config_file))
+        with patch("bot.config.load_dotenv"):
+            with pytest.raises(ValueError, match="DISCORD_BOT_TOKEN"):
+                load_bot_config(str(config_file))
 
 
 class TestConfigReload:
