@@ -8,7 +8,11 @@
       "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs: create roadmap \\(5 phases\\)' --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md)",
       "Skill(gsd-discuss-phase)",
       "WebSearch",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Skill(gsd-code-review)",
+      "Bash(py --version)",
+      "Bash(where python3:*)",
+      "Bash(where py:*)"
     ]
   }
 }

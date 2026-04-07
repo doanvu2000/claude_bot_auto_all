@@ -1,11 +1,29 @@
 {
-    "websocket": {"host": "0.0.0.0", "port": 8765},
-    "heartbeat": {"interval_seconds": 15, "timeout_seconds": 30},
-    "auth": {"registration_timeout_seconds": 10},
-    "logging": {"level": "INFO", "file": "logs/bot.log"},
+    "websocket": {
+        "host": "0.0.0.0",
+        "port": 8765
+    },
+    "heartbeat": {
+        "interval_seconds": 15,
+        "timeout_seconds": 30
+    },
+    "auth": {
+        "registration_timeout_seconds": 10
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "logs/bot.log"
+    },
     "discord": {
-        "allowed_guild_ids": [],
-        "allowed_user_ids": [],
-        "channel_mapping": {}
+        "allowed_guild_ids": [
+            1484174392119267579
+        ],
+        "allowed_user_ids": [
+            653921963064164352
+        ],
+        "channel_mapping": {
+            "1491138095951642775": "my-pc",
+            "1491141262340919296": "DoanVuPC"
+        }
     }
 }

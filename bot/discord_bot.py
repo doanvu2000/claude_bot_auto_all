@@ -92,7 +92,7 @@ class TerminalBot(commands.Bot):
             if channel:
                 try:
                     # D-20: connect notification. Also covers D-21 reconnection
-                    await channel.send(f"\U0001f7e2 **{machine_name}** connected ({platform})")
+                    await channel.send(f"## :white_check_mark:  **{machine_name}** kết nối thành công ({platform})")
                 except Exception as e:
                     logger.error(f"Failed to send connect notification for {machine_name}: {e}")
 
@@ -130,7 +130,7 @@ class TerminalBot(commands.Bot):
             await self.bot_config.save_config()
             try:
                 await existing.send(
-                    f"\U0001f7e2 **{machine_name}** connected ({platform})\n"
+                    f"\U0001f7e2 **{machine_name}** kết nối thành công ({platform})\n"
                     f"_Mapped to existing channel._"
                 )
             except Exception as e:
@@ -154,8 +154,8 @@ class TerminalBot(commands.Bot):
 
             # Send connect notification in new channel
             await channel.send(
-                f"\U0001f7e2 **{machine_name}** connected ({platform})\n"
-                f"_Channel auto-created for this machine._"
+                f"## **{machine_name}** kết nối thành công ({platform})\n"
+                f"_Kênh tự động tạo cho thiết bị này._"
             )
 
         except discord.Forbidden:
@@ -178,7 +178,7 @@ class TerminalBot(commands.Bot):
             channel = self.get_channel(int(channel_id))
             if channel:
                 try:
-                    await channel.send(f"\U0001f534 **{machine_name}** disconnected")
+                    await channel.send(f"# :pleading_face: **{machine_name}** ngắt kết nối")
                 except Exception as e:
                     logger.error(f"Failed to send disconnect notification for {machine_name}: {e}")
 
