@@ -1,0 +1,32 @@
+{
+  "doc_path": "CLAUDE.md",
+  "claims_checked": 9,
+  "claims_passed": 5,
+  "claims_failed": 4,
+  "failures": [
+    {
+      "line": 27,
+      "claim": "discord.py 2.3.x",
+      "expected": "discord.py version 2.3.x in requirements.txt",
+      "actual": "requirements.txt shows discord.py==2.7.1 (minor version mismatch: 2.3.x claimed, 2.7.1 installed)"
+    },
+    {
+      "line": 28,
+      "claim": "websockets 12.x",
+      "expected": "websockets version 12.x in requirements.txt",
+      "actual": "requirements.txt shows websockets==16.0 (major version mismatch: 12.x claimed, 16.0 installed)"
+    },
+    {
+      "line": 37,
+      "claim": "websockets.serve()",
+      "expected": "function 'websockets.serve' in codebase",
+      "actual": "codebase uses websockets.asyncio.server.serve (new API from websockets 14+), not websockets.serve()"
+    },
+    {
+      "line": 38,
+      "claim": "websockets.connect()",
+      "expected": "function 'websockets.connect' in codebase",
+      "actual": "codebase uses websockets.asyncio.client.connect (new API from websockets 14+), not websockets.connect()"
+    }
+  ]
+}
