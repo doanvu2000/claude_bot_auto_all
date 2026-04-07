@@ -14,17 +14,15 @@ From any Discord client, control any registered machine's terminal and Claude Co
 
 - [x] Bot and agents reconnect automatically after disconnect — Validated in Phase 1: websocket-transport-agent-foundation
 - [x] Agents register themselves (with machine name) when they come online — Validated in Phase 1: websocket-transport-agent-foundation
+- [x] Discord bot reads commands from channels and routes them to the correct machine — Validated in Phase 2: discord-bot-message-routing
+- [x] Each Discord channel is mapped to exactly one machine agent — Validated in Phase 2: discord-bot-message-routing
+- [x] Small-group access control — only authorized users in the server can send commands — Validated in Phase 2: discord-bot-message-routing
 
 ### Active
 
-- [ ] Discord bot reads commands from channels and routes them to the correct machine
-- [ ] Each Discord channel is mapped to exactly one machine agent
 - [ ] Machine agent executes arbitrary shell commands and returns output to Discord
 - [ ] Machine agent can drive Claude Code via `claude -p` with session continuity
 - [ ] Claude Code sessions persist across messages until `/new-session` resets them
-- [ ] Small-group access control — only authorized users in the server can send commands
-- [ ] Bot and agents reconnect automatically after disconnect
-- [ ] Agents register themselves (with machine name) when they come online
 
 ### Out of Scope
 
@@ -78,4 +76,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after initialization*
+*Last updated: 2026-04-07 after Phase 2 completion*
