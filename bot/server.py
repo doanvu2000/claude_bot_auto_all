@@ -7,6 +7,7 @@ via heartbeat ping/pong.
 import asyncio
 import signal
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
 from loguru import logger
@@ -44,6 +45,8 @@ class AgentManager:
     def __init__(self, config: BotConfig) -> None:
         self.config = config
         self.agents: dict[str, AgentInfo] = {}
+        self.on_agent_connect: Callable[[str, str], Awaitable[None]] | None = None
+        self.on_agent_disconnect: Callable[[str], Awaitable[None]] | None = None
 
     async def handler(self, websocket: ServerConnection) -> None:
         """Main per-connection handler. Authenticates, then processes messages."""
@@ -98,6 +101,13 @@ class AgentManager:
         ack = AckMessage(request_id=msg.request_id)
         await websocket.send(ack.model_dump_json())
         logger.info(f"Agent registered: {msg.machine_name} ({msg.platform})")
+
+        if self.on_agent_connect:
+            try:
+                await self.on_agent_connect(msg.machine_name, msg.platform)
+            except Exception as e:
+                logger.error(f"Error in on_agent_connect callback: {e}")
+
         return msg.machine_name
 
     async def _handle_agent(self, websocket: ServerConnection, machine_name: str) -> None:
@@ -119,8 +129,13 @@ class AgentManager:
                 logger.debug(f"Unhandled message type from {machine_name}: {type(msg).__name__}")
 
     def _remove_agent(self, machine_name: str) -> None:
-        """Remove agent from tracked dict."""
+        """Remove agent from tracked dict and fire disconnect callback."""
         if machine_name in self.agents:
+            if self.on_agent_disconnect:
+                try:
+                    asyncio.create_task(self.on_agent_disconnect(machine_name))
+                except Exception as e:
+                    logger.error(f"Error scheduling on_agent_disconnect callback: {e}")
             del self.agents[machine_name]
             logger.info(f"Agent disconnected: {machine_name}")
 
