@@ -50,9 +50,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [x] 02-01: TBD
+- [x] 02-02: TBD
+- [x] 02-03: TBD
 
 ### Phase 3: Shell Command Execution
 **Goal**: Users can execute shell commands on any connected machine via Discord and receive formatted output
